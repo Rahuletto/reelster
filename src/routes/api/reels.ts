@@ -1,48 +1,47 @@
-import type { APIEvent } from "@solidjs/start/server";
+import { APIEvent } from "@solidjs/start/server";
+import instagramGetUrl from 'instagram-url-direct';
+
+async function fetchVid(url: string): Promise<Blob> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return await response.blob();
+}
 
 export async function POST({ request }: APIEvent) {
-  const body = await new Response(request.body).json();
-  const igUrl = body.url.split('/?')[0];
-
-  const {ndown} = (await import("nayan-media-downloader")).default;
+  const { url } = await request.json();
   
-  // Dynamic import for `got`
-  const got = (await import("got")).default;
-  const r = got.name;
-
-  let URL = await ndown(igUrl);
-
-  if (!URL.status || (URL.msg && URL?.msg?.includes("off"))) {
-    return new Response(JSON.stringify({ error: "Post not found" }), {
-      status: 404,
+  if (!url || !url.includes('instagram.com')) {
+    return new Response(JSON.stringify({ error: "Invalid Instagram URL" }), {
+      status: 400,
       headers: {
         "content-type": "application/json",
       },
     });
   }
 
-  const fetchVid = async (vid: string) => {
-    const response = await fetch(vid, { method: "GET" });
+  try {
+    // Use instagram-url-direct to get direct URLs
+    const result = await instagramGetUrl(url);
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch video");
+    if (!result.url_list || result.url_list.length === 0) {
+      throw new Error("No media URLs found");
     }
 
-    const blob = await response.blob();
-    return blob;
-  };
+    const vidData = {
+      url: result.url_list[0],
+      thumbnail: result.thumbnail_url || null,
+    };
 
-  const vidData = URL.data[0];
-
-  try {
-    const blob = await fetchVid(vidData?.url);
+    const blob = await fetchVid(vidData.url);
     const arrayBuffer = await blob.arrayBuffer();
     const base64Blob = Buffer.from(arrayBuffer).toString("base64");
 
     const data = {
       video: {
-        url: vidData?.url,
-        thumbnail: vidData?.thumbnail,
+        url: vidData.url,
+        thumbnail: vidData.thumbnail,
         blob: {
           type: blob.type,
           size: blob.size,
@@ -57,7 +56,9 @@ export async function POST({ request }: APIEvent) {
       },
     });
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("Error:", error);
+    return new Response(JSON.stringify({ error: error.message || "Failed to fetch media" }), {
+      status: 500,
       headers: {
         "content-type": "application/json",
       },

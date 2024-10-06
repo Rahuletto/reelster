@@ -58,7 +58,11 @@ export default function Home() {
 
           setVid(URL.createObjectURL(blob));
         }
-      });
+      }).catch(e => {
+        setLoading(false);
+        setError("Failed to fetch media");
+        console.error("Error:", e);
+      })
   };
   return (
     <main class="text-center mx-auto flex items-center flex-col justify-center gap-6 w-screen h-screen px-3">
