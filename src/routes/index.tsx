@@ -61,6 +61,7 @@ export default function Home() {
   const handleClick = () => {
     cleanup();
     if (!url()) return setError("Please enter a URL");
+    setUrl(url().trim().split("/?")[0].split("com/")[1])
     setLoading(true);
     startTimer();
 
@@ -94,7 +95,7 @@ export default function Home() {
       .catch((e) => {
         setLoading(false);
         stopTimer();
-        setError("Failed to fetch media");
+        setError(e);
         console.error("Error:", e);
       });
   };
