@@ -61,7 +61,7 @@ export default function Home() {
   const handleClick = () => {
     cleanup();
     if (!url()) return setError("Please enter a URL");
-    setUrl(url().trim().split("/?")[0].split("com/")[1])
+    setUrl(url()?.trim()?.split("/?")[0]?.split("com/")[1])
     setLoading(true);
     startTimer();
 
@@ -194,6 +194,7 @@ export default function Home() {
         )}
 
         <button
+        disabled={loading()}
           class={`bg-white p-3 w-full px-6 items-center gap-3 justify-start text-black rounded-full transition-all duration-200 ${
             loading() ? "opacity-100 flex" : "opacity-0 hidden"
           }`}
