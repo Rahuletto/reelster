@@ -1,11 +1,12 @@
 import type { APIEvent } from "@solidjs/start/server";
 import pkg from "nayan-media-downloader";
 const { ndown } = pkg;
+import got from "got";
 
 export async function POST({ request }: APIEvent) {
   const body = await new Response(request.body).json();
   const igUrl = body.url.split('/?')[0];
-  
+
   let URL = await ndown(body.url);
 
   if (!URL.status || (URL.msg && URL?.msg?.includes("off"))) {
