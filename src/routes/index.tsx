@@ -61,16 +61,20 @@ export default function Home() {
   const handleClick = () => {
     cleanup();
     if (!url()) return setError("Please enter a URL");
-    setUrl(url()?.trim()?.split("/?")[0]?.split("com/")[1])
+    setUrl(
+      url()
+        ?.trim()
+        ?.split("/?")[0]
+        ?.split("com/")[1]
+        ?.replace("reel/", "reels/")
+    );
     setLoading(true);
     startTimer();
 
     fetch("/api/reels", {
       method: "POST",
       body: JSON.stringify({
-        url: url().startsWith("https://instagram.com")
-          ? url()
-          : `https://instagram.com/reels/${url()}`,
+        url: `https://instagram.com/${url()}`,
       }),
     })
       .then((r) => r.json())
@@ -151,7 +155,9 @@ export default function Home() {
             </svg>
             {error() && <p class="text-white font-semibold">{error()}</p>}
             {timeCount() >= 0 && loading() && (
-              <h1 class="mt-4 text-xl font-semibold"><span class="text-5xl">{timeCount()}</span>s</h1>
+              <h1 class="mt-4 text-xl font-semibold">
+                <span class="text-5xl">{timeCount()}</span>s
+              </h1>
             )}
           </div>
         )}
@@ -194,7 +200,7 @@ export default function Home() {
         )}
 
         <button
-        disabled={loading()}
+          disabled={loading()}
           class={`bg-white p-3 w-full px-6 items-center gap-3 justify-start text-black rounded-full transition-all duration-200 ${
             loading() ? "opacity-100 flex" : "opacity-0 hidden"
           }`}
