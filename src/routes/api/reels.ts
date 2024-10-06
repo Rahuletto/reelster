@@ -1,12 +1,14 @@
 import type { APIEvent } from "@solidjs/start/server";
-import got from "got";
-import pkg from "nayan-media-downloader";
-const { ndown } = pkg;
 
 export async function POST({ request }: APIEvent) {
   const body = await new Response(request.body).json();
   const igUrl = body.url.split('/?')[0];
-  const r = got.name
+
+  const {ndown} = (await import("nayan-media-downloader")).default;
+  
+  // Dynamic import for `got`
+  const got = (await import("got")).default;
+  const r = got.name;
 
   let URL = await ndown(igUrl);
 
