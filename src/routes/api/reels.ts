@@ -1,13 +1,14 @@
 import type { APIEvent } from "@solidjs/start/server";
+import got from "got";
 import pkg from "nayan-media-downloader";
 const { ndown } = pkg;
-import got from "got";
 
 export async function POST({ request }: APIEvent) {
   const body = await new Response(request.body).json();
   const igUrl = body.url.split('/?')[0];
+  const r = got.name
 
-  let URL = await ndown(body.url);
+  let URL = await ndown(igUrl);
 
   if (!URL.status || (URL.msg && URL?.msg?.includes("off"))) {
     return new Response(JSON.stringify({ error: "Post not found" }), {
