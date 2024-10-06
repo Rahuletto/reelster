@@ -1,4 +1,4 @@
-import { createEffect, createSignal } from "solid-js";
+import { createEffect, createSignal, onCleanup } from "solid-js";
 
 export default function Home() {
   const [url, setUrl] = createSignal("");
@@ -8,6 +8,36 @@ export default function Home() {
   const [loading, setLoading] = createSignal(false);
   const [error, setError] = createSignal("");
   const [type, setType] = createSignal("");
+
+  const [timeCount, setTimeCount] = createSignal(0);
+  const [isRunning, setIsRunning] = createSignal(false);
+  let interval: NodeJS.Timeout;
+
+  const startTimer = () => {
+    if (!isRunning()) {
+      setIsRunning(true);
+      interval = setInterval(() => {
+        setTimeCount((prev) => prev + 1);
+      }, 1000);
+    }
+  };
+
+  const stopTimer = () => {
+    clearInterval(interval);
+    setIsRunning(false);
+  };
+
+  onCleanup(() => cleanup());
+
+  function cleanup() {
+    setTimeCount(0);
+    stopTimer();
+    setType("");
+    setError("");
+    setVid("");
+    setSrc("");
+    setThumb("");
+  }
 
   const base64ToBlob = (base64: string, mimeType: string) => {
     const byteCharacters = atob(base64);
@@ -29,9 +59,10 @@ export default function Home() {
   };
 
   const handleClick = () => {
-    setError("");
+    cleanup();
     if (!url()) return setError("Please enter a URL");
     setLoading(true);
+    startTimer();
 
     fetch("/api/reels", {
       method: "POST",
@@ -43,6 +74,7 @@ export default function Home() {
     })
       .then((r) => r.json())
       .then((data) => {
+        stopTimer();
         if (data.error) {
           setLoading(false);
           return setError(data.error);
@@ -58,11 +90,13 @@ export default function Home() {
 
           setVid(URL.createObjectURL(blob));
         }
-      }).catch(e => {
+      })
+      .catch((e) => {
         setLoading(false);
+        stopTimer();
         setError("Failed to fetch media");
         console.error("Error:", e);
-      })
+      });
   };
   return (
     <main class="text-center mx-auto flex items-center flex-col justify-center gap-6 w-screen h-screen px-3">
@@ -115,6 +149,9 @@ export default function Home() {
               <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"></path>
             </svg>
             {error() && <p class="text-white font-semibold">{error()}</p>}
+            {timeCount() >= 0 && loading() && (
+              <h1 class="mt-4 text-xl font-semibold"><span class="text-5xl">{timeCount()}</span>s</h1>
+            )}
           </div>
         )}
       </div>
