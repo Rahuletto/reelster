@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onCleanup } from "solid-js";
+import { createSignal, onCleanup } from "solid-js";
 
 export default function Home() {
   const [url, setUrl] = createSignal("");
@@ -61,20 +61,19 @@ export default function Home() {
   const handleClick = () => {
     cleanup();
     if (!url()) return setError("Please enter a URL");
-    setUrl(
-      url()
-        ?.trim()
-        ?.split("/?")[0]
-        ?.split("com/")[1]
-        ?.replace("reel/", "reels/")
-    );
     setLoading(true);
     startTimer();
+
+    const u = url()
+    ?.trim()
+    ?.split("/?")[0]
+    ?.split("com/")[1]
+    ?.replace("reels/", "reel/")
 
     fetch("/api/reels", {
       method: "POST",
       body: JSON.stringify({
-        url: `https://instagram.com/${url()}`,
+        url: `https://instagram.com/${u}`,
       }),
     })
       .then((r) => r.json())
@@ -111,8 +110,8 @@ export default function Home() {
           error() ? "border-2 border-red-400" : ""
         } ${
           type().includes("image")
-            ? "aspect-[1/1.05] w-[500px]"
-            : "min-h-[70vh] aspect-[9/16.65]"
+            ? "aspect-[1/1] w-[500px]"
+            : "min-h-[70vh] aspect-[9/15.9]"
         } rounded-[1.1rem] p-0.5`}
       >
         {vid() ? (
@@ -125,20 +124,11 @@ export default function Home() {
             ) : (
               <video
                 autoplay
-                class="rounded-2xl max-h-[70vh]"
+                class="rounded-2xl h-full max-h-[70vh]"
                 controls
                 src={vid()}
               />
             )}
-
-            <a
-              class="text-white my-2 text-xs opacity-30 w-full font-mono underline overflow-hidden"
-              href={src()}
-              download
-              target="_blank"
-            >
-              Download
-            </a>
           </>
         ) : (
           <div class="w-full opacity-10 h-full flex items-center justify-center flex-col gap-2">

@@ -1,7 +1,7 @@
 # Reelster
 
 Reelster allows you to download Instagram Reels directly from the platform by using its URL. It’s designed to be simple and efficient.
-Made with `SolidStart`
+Made with `SolidStart`.
 
 > [!IMPORTANT]
 > This tool is limited to public Instagram Reels.
@@ -12,6 +12,7 @@ Made with `SolidStart`
 - Download in high quality.
 - Minimalist interface
 - Anonymity, No login required
+- Zippy fast! No external dependency!
 
 ## Installation
 

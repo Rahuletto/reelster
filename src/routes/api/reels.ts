@@ -1,5 +1,6 @@
 import { APIEvent } from "@solidjs/start/server";
-import instagramGetUrl from 'instagram-url-direct';
+import { instagramGetUrl } from "../../../utils/instaql";
+
 
 async function fetchVid(url: string): Promise<Blob> {
   const response = await fetch(url);
@@ -11,7 +12,7 @@ async function fetchVid(url: string): Promise<Blob> {
 
 export async function POST({ request }: APIEvent) {
   const { url } = await request.json();
-  
+
   if (!url || !url.includes('instagram.com')) {
     return new Response(JSON.stringify({ error: "Invalid Instagram URL" }), {
       status: 400,
@@ -22,7 +23,6 @@ export async function POST({ request }: APIEvent) {
   }
 
   try {
-    // Use instagram-url-direct to get direct URLs
     const result = await instagramGetUrl(url);
 
     if (!result.url_list || result.url_list.length === 0) {
@@ -31,7 +31,7 @@ export async function POST({ request }: APIEvent) {
 
     const vidData = {
       url: result.url_list[0],
-      thumbnail: result.thumbnail_url || null,
+      thumbnail: result.media_details[0].thumbnail || null,
     };
 
     const blob = await fetchVid(vidData.url);
